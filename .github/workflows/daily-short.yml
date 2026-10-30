@@ -1,0 +1,43 @@
+
+name: Daily YouTube Short
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install FFmpeg and voice engine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Generate Short
+        run: python generate_short.py
+
+      - name: Save video draft
+        uses: actions/upload-artifact@v4
+        with:
+          name: short-draft
+          path: output/
+          if-no-files-found: error
+          retention-days: 7
